@@ -148,5 +148,6 @@ python3 src/main.py
 | 배포 형태 | Git 저장소를 통한 소스 공유 |
 
 ---
-
-제작자 : s_hyun_dev
+<div align="center">
+  <sub>© 2026 <a href="https://github.com">@innurhap28</a>. All rights reserved.</sub>
+</div>
