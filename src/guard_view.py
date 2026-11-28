@@ -282,20 +282,15 @@ class GuardView:
 
             self.timer_status = tk.Label(
                 panel,
-                text="대기 시간이 끝날 때까지 기다려주세요.",
+                text=f"{duration}초가 지나면 다음 단계로 진행할 수 있습니다.",
                 bg=Theme.PANEL,
                 fg=Theme.MUTED,
                 font=("Arial", 10),
             )
             self.timer_status.pack(pady=(0, 16))
 
-            self.action_button = self._button(
-                panel,
-                f"{duration}초 대기 시작",
-                self._on_start_timer,
-                Theme.BLUE,
-            )
-            self.action_button.pack(fill="x", pady=(8, 0))
+            self.ctrl.start_timer(self._now_seconds())
+            self._tick_timer()
         else:
             if step.get("warning"):
                 tk.Label(
@@ -310,13 +305,12 @@ class GuardView:
                     pady=10,
                 ).pack(fill="x", pady=(0, 18))
 
-            self.action_button = self._button(
+            self._button(
                 panel,
                 step.get("button", "완료했어요  →"),
                 self._on_next_step,
                 accent,
-            )
-            self.action_button.pack(fill="x", pady=(8, 0))
+            ).pack(fill="x", pady=(8, 0))
 
         bottom = tk.Frame(self.content, bg=Theme.BG)
         bottom.pack(fill="x", pady=(16, 0))
@@ -329,18 +323,19 @@ class GuardView:
             fg=Theme.TEXT,
         ).pack(side="left")
 
+        if self.ctrl.mode == "off" and self.ctrl.step_index == 0:
+            self._button(
+                bottom,
+                "아직 합주 중이에요",
+                self.render_mini_mode,
+                Theme.PANEL_LIGHT,
+                fg=Theme.TEXT,
+            ).pack(side="right")
+
     @staticmethod
     def _format_countdown(seconds: int) -> str:
         minutes, seconds = divmod(seconds, 60)
         return f"{minutes:02d}:{seconds:02d}"
-
-    def _on_start_timer(self):
-        duration = self.ctrl.start_timer(self._now_seconds())
-        if duration is None:
-            return
-        self.action_button.update_button(state=tk.DISABLED, text="대기 중...")
-        self.timer_status.configure(text=f"{duration}초가 지나면 다음 단계로 진행할 수 있습니다.")
-        self._tick_timer()
 
     def _tick_timer(self):
         seconds, finished = self.ctrl.check_timer(self._now_seconds())
@@ -352,12 +347,12 @@ class GuardView:
             self.timer_status.configure(text="대기 시간이 끝났습니다. 실제 장비 상태를 확인하세요.")
             play_notification()
             self.root.bell()
-            self.action_button.update_button(
-                state=tk.NORMAL,
-                text="대기 완료 · 다음 단계로 →",
-                command=self._on_next_step,
-                bg=Theme.GREEN,
-            )
+            self._button(
+                self.timer_label.master,
+                "대기 완료 · 다음 단계로 →",
+                self._on_next_step,
+                Theme.GREEN,
+            ).pack(fill="x", pady=(8, 0))
             return
 
         self.timer_after_id = self.root.after(100, self._tick_timer)
@@ -380,7 +375,7 @@ class GuardView:
         is_on = self.ctrl.mode == "on"
         title = "전원 켜기 완료" if is_on else "전원 끄기 완료"
         message = (
-            "두 앰프와 X AIR Edit 사용 준비가 끝났습니다.\n아래 버튼을 누르면 우측 상단 미니 바 모드로 전환됩니다."
+            "사용 준비가 끝났습니다.\n아래 버튼을 누르면 우측 상단의 작은 화면으로 전환됩니다."
             if is_on
             else "두 앰프와 믹서의 전원 종료 절차가 끝났습니다.\n이제 컴퓨터를 종료하셔도 안전합니다."
         )
