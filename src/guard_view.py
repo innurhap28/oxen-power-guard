@@ -6,6 +6,7 @@ from tkinter import messagebox
 
 from guard_controller import GuardController
 from notifications import play_notification
+from settings import POWER_OFF_WAIT_SECONDS, POWER_ON_WAIT_SECONDS
 from ui_widgets import FlatButton, Theme
 
 
@@ -120,7 +121,6 @@ class GuardView:
         )
 
     def render_home(self):
-        self.ctrl.reset_to_home()
         self._set_window_mode(mini=False)
         self._clear_content()
 
@@ -168,8 +168,8 @@ class GuardView:
         tk.Label(
             info,
             text=(
-                "전원 켜기: 믹서 ON → 30초 → 앰프 ON → X Air 연결 및 Mute 해제\n"
-                "전원 끄기: 전체 Mute → 앰프 OFF → 30초 → 표시등 확인 → 믹서 OFF"
+                f"전원 켜기: 믹서 ON → {POWER_ON_WAIT_SECONDS}초 → 앰프 ON → X Air 연결 및 Mute 해제\n"
+                f"전원 끄기: 전체 Mute → 앰프 OFF → {POWER_OFF_WAIT_SECONDS}초 → 표시등 확인 → 믹서 OFF"
             ),
             bg=Theme.PANEL,
             fg=Theme.TEXT,
@@ -269,11 +269,11 @@ class GuardView:
             justify="left",
         ).pack(anchor="w", pady=(0, 20))
 
-        if step.get("timer"):
-            duration = step.get("duration", 30)
+        duration = self.ctrl.timer_duration
+        if duration is not None:
             self.timer_label = tk.Label(
                 panel,
-                text=f"00:{duration:02d}",
+                text=self._format_countdown(duration),
                 bg=Theme.PANEL,
                 fg=Theme.AMBER,
                 font=("Arial", 48, "bold"),
@@ -292,7 +292,7 @@ class GuardView:
             self.action_button = self._button(
                 panel,
                 f"{duration}초 대기 시작",
-                lambda d=duration: self._on_start_timer(d),
+                self._on_start_timer,
                 Theme.BLUE,
             )
             self.action_button.pack(fill="x", pady=(8, 0))
@@ -329,17 +329,22 @@ class GuardView:
             fg=Theme.TEXT,
         ).pack(side="left")
 
-    def _on_start_timer(self, duration: int):
-        if self.ctrl.timer_running:
+    @staticmethod
+    def _format_countdown(seconds: int) -> str:
+        minutes, seconds = divmod(seconds, 60)
+        return f"{minutes:02d}:{seconds:02d}"
+
+    def _on_start_timer(self):
+        duration = self.ctrl.start_timer(self._now_seconds())
+        if duration is None:
             return
-        self.ctrl.start_timer(self._now_seconds(), duration)
         self.action_button.update_button(state=tk.DISABLED, text="대기 중...")
         self.timer_status.configure(text=f"{duration}초가 지나면 다음 단계로 진행할 수 있습니다.")
         self._tick_timer()
 
     def _tick_timer(self):
         seconds, finished = self.ctrl.check_timer(self._now_seconds())
-        self.timer_label.configure(text=f"00:{seconds:02d}")
+        self.timer_label.configure(text=self._format_countdown(seconds))
 
         if finished:
             self.timer_after_id = None
@@ -362,7 +367,6 @@ class GuardView:
             with contextlib.suppress(tk.TclError):
                 self.root.after_cancel(self.timer_after_id)
             self.timer_after_id = None
-        self.ctrl.stop_timer()
 
     def _on_next_step(self):
         has_next = self.ctrl.advance_step()
@@ -417,7 +421,7 @@ class GuardView:
             self._button(
                 self.content,
                 "처음 화면으로 돌아가기",
-                self.render_home,
+                self._on_confirm_home,
                 Theme.PANEL_LIGHT,
                 fg=Theme.TEXT,
             ).pack(fill="x", pady=6)
@@ -431,6 +435,7 @@ class GuardView:
             )
             if not answer:
                 return
+        self.ctrl.reset_to_home()
         self.render_home()
 
     def _intercept_system_close(self):
@@ -462,4 +467,5 @@ class GuardView:
     def _force_quit(self, _event=None):
         """관리자용 비상 종료 (Ctrl + Shift + Q)."""
         self._cancel_timer_loop()
+        self.ctrl.stop_timer()
         self.root.destroy()

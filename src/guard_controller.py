@@ -1,5 +1,7 @@
 """OXEN Power Guard - 전원 절차 상태 및 타이머 제어 로직."""
 
+from math import ceil
+
 from power_sequence import POWER_OFF_STEPS, POWER_ON_STEPS
 
 
@@ -39,6 +41,11 @@ class GuardController:
         return None
 
     @property
+    def timer_duration(self) -> int | None:
+        step = self.current_step
+        return step.get("duration") if step is not None else None
+
+    @property
     def progress_ratio(self) -> float:
         if not self.steps:
             return 0.0
@@ -53,11 +60,13 @@ class GuardController:
         """전원 끄기 절차를 완전히 마쳤을 때만 프로그램/OS 종료 허용."""
         return self.mode == "off" and self.completed
 
-    def start_timer(self, now_seconds: float, duration: int = 30):
-        if self.timer_running:
-            return
+    def start_timer(self, now_seconds: float) -> int | None:
+        duration = self.timer_duration
+        if duration is None or self.timer_running:
+            return None
         self.timer_running = True
         self.deadline = now_seconds + duration
+        return duration
 
     def stop_timer(self):
         self.timer_running = False
@@ -69,7 +78,7 @@ class GuardController:
             return 0, True
 
         remaining = max(0.0, self.deadline - now_seconds)
-        seconds = int(remaining + 0.999)
+        seconds = ceil(remaining)
 
         if remaining <= 0:
             self.stop_timer()

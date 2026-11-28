@@ -1,5 +1,7 @@
 """메인 앰프 전원 조작 순서."""
 
+from settings import POWER_OFF_WAIT_SECONDS, POWER_ON_WAIT_SECONDS
+
 POWER_ON_STEPS = [
     {
         "title": "믹서 전원을 켜주세요",
@@ -7,13 +9,13 @@ POWER_ON_STEPS = [
         "button": "믹서를 켰어요  →",
     },
     {
-        "title": "30초 기다려주세요",
-        "description": "믹서 전원을 켠 뒤 앰프를 켜기 전까지 30초 대기합니다.",
-        "timer": True,
+        "title": f"{POWER_ON_WAIT_SECONDS}초 기다려주세요",
+        "description": f"믹서 전원을 켠 뒤 앰프를 켜기 전까지 {POWER_ON_WAIT_SECONDS}초 대기합니다.",
+        "duration": POWER_ON_WAIT_SECONDS,
     },
     {
         "title": "메인 앰프를 켜주세요",
-        "description": "30초 대기가 끝났습니다. 메인 앰프 전원을 ON으로 전환하세요.",
+        "description": f"{POWER_ON_WAIT_SECONDS}초 대기가 끝났습니다. 메인 앰프 전원을 ON으로 전환하세요.",
         "button": "앰프를 켰어요  →",
     },
     {
@@ -51,9 +53,9 @@ POWER_OFF_STEPS = [
         "button": "앰프를 껐어요  →",
     },
     {
-        "title": "30초 기다려주세요",
-        "description": "앰프 전원을 끈 뒤 믹서 전원을 끄기 전까지 30초 대기합니다.",
-        "timer": True,
+        "title": f"{POWER_OFF_WAIT_SECONDS}초 기다려주세요",
+        "description": f"앰프 전원을 끈 뒤 믹서 전원을 끄기 전까지 {POWER_OFF_WAIT_SECONDS}초 대기합니다.",
+        "duration": POWER_OFF_WAIT_SECONDS,
     },
     {
         "title": "앰프의 빨간 표시등을 확인하세요",

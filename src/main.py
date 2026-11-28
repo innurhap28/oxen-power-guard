@@ -23,6 +23,7 @@ def main() -> int:
         return 0
 
     except KeyboardInterrupt:
+        print("[사용자 종료] 프로그램이 사용자에 의해 종료되었습니다.", file=sys.stderr)
         return 128 + signal.SIGINT
 
     except tk.TclError as e:
