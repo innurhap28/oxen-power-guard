@@ -168,8 +168,8 @@ class GuardView:
         tk.Label(
             info,
             text=(
-                f"전원 켜기: 믹서 ON → {POWER_ON_WAIT_SECONDS}초 → 앰프 ON → X Air 연결 및 Mute 해제\n"
-                f"전원 끄기: 전체 Mute → 앰프 OFF → {POWER_OFF_WAIT_SECONDS}초 → 표시등 확인 → 믹서 OFF"
+                f"전원 켜기: 믹서 ON → {POWER_ON_WAIT_SECONDS}초 → 두 앰프 ON → X AIR Edit 연결\n"
+                f"전원 끄기: 두 앰프 OFF → {POWER_OFF_WAIT_SECONDS}초 → 믹서 OFF"
             ),
             bg=Theme.PANEL,
             fg=Theme.TEXT,
@@ -179,7 +179,7 @@ class GuardView:
         ).pack(anchor="w")
 
     def render_mini_mode(self):
-        """합주 중 X Air 화면을 가리지 않도록 우측 상단 미니 바로 축소."""
+        """합주 중 X AIR Edit 화면을 가리지 않도록 우측 상단 미니 바로 축소."""
         self._cancel_timer_loop()
         self._set_window_mode(mini=True)
 
@@ -380,9 +380,9 @@ class GuardView:
         is_on = self.ctrl.mode == "on"
         title = "전원 켜기 완료" if is_on else "전원 끄기 완료"
         message = (
-            "메인 앰프와 X Air 사용 준비가 끝났습니다.\n아래 버튼을 누르면 우측 상단 미니 바 모드로 전환됩니다."
+            "두 앰프와 X AIR Edit 사용 준비가 끝났습니다.\n아래 버튼을 누르면 우측 상단 미니 바 모드로 전환됩니다."
             if is_on
-            else "메인 앰프와 믹서의 전원 종료 절차가 끝났습니다.\n이제 컴퓨터를 종료하셔도 안전합니다."
+            else "두 앰프와 믹서의 전원 종료 절차가 끝났습니다.\n이제 컴퓨터를 종료하셔도 안전합니다."
         )
 
         tk.Label(
@@ -451,10 +451,10 @@ class GuardView:
         self._alert_open = True
         try:
             message = (
-                "아직 메인 앰프/믹서 전원 종료 절차가 완료되지 않았습니다!\n"
+                "아직 두 앰프/믹서 전원 종료 절차가 완료되지 않았습니다!\n"
                 "합주를 마치려면 우측 상단의 '전원 끄기' 버튼을 눌러 절차를 진행해 주세요."
                 if self.is_mini
-                else "아직 메인 앰프/믹서 전원 종료 절차가 완료되지 않았습니다!\n"
+                else "아직 두 앰프/믹서 전원 종료 절차가 완료되지 않았습니다!\n"
                 "장비 손상 방지를 위해 '전원 끄기' 절차를 완료한 후 종료해 주세요."
             )
             messagebox.showwarning("전원 보호 경고", message, parent=self.root)

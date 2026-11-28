@@ -21,5 +21,5 @@ def _wait_seconds(name: str, default: int) -> int:
     return default
 
 
-POWER_ON_WAIT_SECONDS = _wait_seconds("OXEN_POWER_ON_WAIT_SECONDS", 30)
+POWER_ON_WAIT_SECONDS = _wait_seconds("OXEN_POWER_ON_WAIT_SECONDS", 10)
 POWER_OFF_WAIT_SECONDS = _wait_seconds("OXEN_POWER_OFF_WAIT_SECONDS", 30)
